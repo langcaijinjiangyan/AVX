@@ -1,0 +1,64 @@
+#include<immintrin.h>
+#include<iostream>
+#include<cmath>
+#include<random>
+#include<sys/time.h>
+#define ll long long
+using namespace std;
+const int N=1<<24;
+const int M=N>>3;
+float a[M],b[M],c[M];
+__m256 va[N],vb[N],vc[N];
+int n,m;
+void Init (){
+	for(int i=0;i<n;i++)
+		a[i]=rand()/rand(),b[i]=rand()/rand();
+	m=1<<21;
+	for(int i=0;i<m;i++){
+		va[i]=_mm256_setr_ps(a[i],a[i+1],a[i+2],a[i+3],a[i+4],a[i+5],a[i+6],a[i+7]);
+		vb[i]=_mm256_setr_ps(b[i],b[i+1],b[i+2],b[i+3],b[i+4],b[i+5],b[i+6],b[i+7]);
+	}
+}
+long sum_arr(){
+    struct timeval tv1, tv2;
+    gettimeofday(&tv1, NULL);
+	for(int i=0;i<n;i++) c[i]=a[i]+b[i];
+    gettimeofday(&tv2, NULL);
+    return (tv2.tv_sec - tv1.tv_sec) * 1000000 + tv2.tv_usec - tv1.tv_usec;
+}
+long sum_avx(){
+    struct timeval tv1, tv2;
+    gettimeofday(&tv1, NULL);
+	for(int i=0;i<m;i++)
+		vc[i]=_mm256_add_ps(va[i],vb[i]);
+    gettimeofday(&tv2, NULL);
+    return (tv2.tv_sec - tv1.tv_sec) * 1000000 + tv2.tv_usec - tv1.tv_usec;
+}
+long mul_arr(){
+    struct timeval tv1, tv2;
+    gettimeofday(&tv1, NULL);
+	for(int i=0;i<n;i++) c[i]=a[i]*b[i];
+    gettimeofday(&tv2, NULL);
+    return (tv2.tv_sec - tv1.tv_sec) * 1000000 + tv2.tv_usec - tv1.tv_usec;
+}
+long mul_avx(){
+    struct timeval tv1, tv2;
+    gettimeofday(&tv1, NULL);
+	for(int i=0;i<m;i++)
+		vc[i]=_mm256_mul_ps(va[i],vb[i]);
+    gettimeofday(&tv2, NULL);
+    return (tv2.tv_sec - tv1.tv_sec) * 1000000 + tv2.tv_usec - tv1.tv_usec;
+}
+int main(){
+	srand(time(0));
+	n=1<<24,Init();
+	long t1=sum_arr();
+	long t2=sum_avx();
+	long t3=mul_arr();
+	long t4=mul_arr();
+	cout<<"sum_arr	"<<(double)t1<<endl;
+	cout<<"sum_avx	"<<(double)t2<<endl;
+	cout<<"mul_arr	"<<(double)t3<<endl;
+	cout<<"mul_avx	"<<(double)t4<<endl;
+	return 0;
+}
